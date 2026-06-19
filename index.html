@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WeatherSphere AI — Premium Weather Dashboard</title>
+<meta name="description" content="WeatherSphere AI — a premium, glassmorphic weather dashboard with real-time forecasts, smart insights, and air quality tracking." />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%236EE7F9'/%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="style.css" />
+</head>
+<body data-theme="dark" data-weather="default">
+
+  <!-- Ambient animated background -->
+  <div class="bg-atmosphere" aria-hidden="true">
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="orb orb-c"></div>
+    <div class="grain"></div>
+  </div>
+
+  <!-- ============ NAVBAR ============ -->
+  <header class="navbar">
+    <div class="nav-left">
+      <div class="logo-mark" aria-hidden="true">
+        <span class="logo-core"></span>
+        <span class="logo-ring"></span>
+      </div>
+      <div class="logo-text">
+        <span class="logo-name">WeatherSphere</span>
+        <span class="logo-badge">AI</span>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <time class="live-clock" id="liveClock" aria-live="off">--:--:--</time>
+
+      <button class="unit-toggle" id="unitToggle" type="button" aria-label="Toggle temperature unit" title="Switch °C / °F">
+        <span class="unit-pill" id="unitC">°C</span>
+        <span class="unit-pill" id="unitF">°F</span>
+      </button>
+
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark and light theme" title="Toggle theme">
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4.5"></circle>
+          <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path>
+        </svg>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ HERO ============ -->
+    <section class="hero">
+      <div class="hero-intro">
+        <span class="eyebrow">Real-time atmospheric intelligence</span>
+        <h1 class="hero-title">Know the sky before you step outside.</h1>
+      </div>
+
+      <form class="search-bar" id="searchForm" role="search" autocomplete="off">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="M21 21l-4.3-4.3"></path>
+        </svg>
+        <input type="text" id="cityInput" placeholder="Search a city — e.g. Chennai, Tokyo, Oslo" aria-label="City search" />
+        <button type="button" class="btn-icon" id="locationBtn" title="Use my current location" aria-label="Use my current location">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"></path>
+            <circle cx="12" cy="9" r="2.5"></circle>
+          </svg>
+        </button>
+        <button type="submit" class="btn-primary" id="searchBtn">Search</button>
+      </form>
+
+      <div class="error-banner" id="errorBanner" role="alert" hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path></svg>
+        <span id="errorText">Something went wrong.</span>
+        <button class="error-close" id="errorClose" aria-label="Dismiss error">×</button>
+      </div>
+
+      <div class="recent-searches" id="recentWrap" hidden>
+        <span class="recent-label">Recent</span>
+        <div class="chip-row" id="recentSearches"></div>
+      </div>
+
+      <!-- Empty state before first search -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-orb">
+          <span>🌍</span>
+        </div>
+        <p>Search any city to reveal a full live weather profile.</p>
+      </div>
+
+      <!-- API key setup notice -->
+      <div class="api-key-banner" id="apiKeyBanner" hidden>
+        <strong>One quick step:</strong> add your free OpenWeatherMap API key inside <code>script.js</code> (look for <code>CONFIG.API_KEY</code>) to bring this dashboard to life.
+        <a href="https://home.openweathermap.org/users/sign_up" target="_blank" rel="noopener">Get a free key →</a>
+      </div>
+
+      <!-- Main weather display -->
+      <div class="hero-display" id="heroDisplay" hidden>
+        <div class="halo-stage">
+          <div class="halo-ring" id="haloRing"></div>
+          <div class="particles" id="particles" aria-hidden="true"></div>
+          <div class="weather-emoji" id="weatherEmoji">☀️</div>
+        </div>
+
+        <div class="hero-info">
+          <div class="place-row">
+            <h2 class="city-name" id="cityName">—</h2>
+            <span class="country-tag" id="countryTag"></span>
+          </div>
+          <span class="local-time" id="localTimeDisplay">Local time —</span>
+
+          <div class="temp-row">
+            <span class="temp-value" id="temperature">--</span>
+            <span class="temp-unit" id="tempUnitDisplay">°C</span>
+          </div>
+          <p class="condition-text" id="conditionText">—</p>
+
+          <div class="hero-subrow">
+            <div class="subrow-item">
+              <span class="subrow-label">Feels like</span>
+              <span class="subrow-value" id="feelsLikeMini">--°</span>
+            </div>
+            <div class="subrow-divider"></div>
+            <div class="subrow-item">
+              <span class="subrow-label">Sunrise</span>
+              <span class="subrow-value" id="sunriseMini">--:--</span>
+            </div>
+            <div class="subrow-divider"></div>
+            <div class="subrow-item">
+              <span class="subrow-label">Sunset</span>
+              <span class="subrow-value" id="sunsetMini">--:--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ANALYTICS ============ -->
+    <section class="analytics" id="analyticsSection" hidden>
+      <div class="section-head">
+        <h2>Weather Analytics</h2>
+        <p>A complete breakdown of current atmospheric conditions.</p>
+      </div>
+
+      <div class="metrics-grid">
+
+        <div class="metric-card" id="tempCard" style="--delay:0s">
+          <div class="metric-top">
+            <span class="metric-icon">🌡️</span>
+            <span class="metric-label">Temperature</span>
+          </div>
+          <span class="metric-value" id="metricTemp">--°</span>
+          <span class="metric-sub">Current reading</span>
+        </div>
+
+        <div class="metric-card" id="feelsCard" style="--delay:0.06s">
+          <div class="metric-top">
+            <span class="metric-icon">🫂</span>
+            <span class="metric-label">Feels Like</span>
+          </div>
+          <span class="metric-value" id="metricFeels">--°</span>
+          <span class="metric-sub" id="metricFeelsSub">Perceived temperature</span>
+        </div>
+
+        <div class="metric-card metric-card--ring" id="humidityCard" style="--delay:0.12s">
+          <div class="metric-top">
+            <span class="metric-icon">💧</span>
+            <span class="metric-label">Humidity</span>
+          </div>
+          <div class="ring-wrap">
+            <svg class="progress-ring" viewBox="0 0 64 64">
+              <circle class="ring-track" cx="32" cy="32" r="26"></circle>
+              <circle class="ring-value" id="humidityRing" cx="32" cy="32" r="26"></circle>
+            </svg>
+            <span class="ring-text" id="metricHumidity">--%</span>
+          </div>
+          <span class="metric-sub">Relative humidity</span>
+        </div>
+
+        <div class="metric-card metric-card--ring" id="windCard" style="--delay:0.18s">
+          <div class="metric-top">
+            <span class="metric-icon">🌬️</span>
+            <span class="metric-label">Wind Speed</span>
+          </div>
+          <div class="ring-wrap">
+            <svg class="progress-ring" viewBox="0 0 64 64">
+              <circle class="ring-track" cx="32" cy="32" r="26"></circle>
+              <circle class="ring-value" id="windRing" cx="32" cy="32" r="26"></circle>
+            </svg>
+            <span class="ring-text ring-text--sm" id="metricWind">--</span>
+          </div>
+          <span class="metric-sub">km/h</span>
+        </div>
+
+        <div class="metric-card" id="visibilityCard" style="--delay:0.24s">
+          <div class="metric-top">
+            <span class="metric-icon">👁️</span>
+            <span class="metric-label">Visibility</span>
+          </div>
+          <span class="metric-value" id="metricVisibility">-- km</span>
+          <span class="metric-sub">Maximum sight distance</span>
+        </div>
+
+        <div class="metric-card" id="pressureCard" style="--delay:0.3s">
+          <div class="metric-top">
+            <span class="metric-icon">📊</span>
+            <span class="metric-label">Pressure</span>
+          </div>
+          <span class="metric-value" id="metricPressure">-- hPa</span>
+          <span class="metric-sub">Sea-level pressure</span>
+        </div>
+
+        <div class="metric-card" id="aqiCard" style="--delay:0.36s">
+          <div class="metric-top">
+            <span class="metric-icon">🍃</span>
+            <span class="metric-label">Air Quality</span>
+          </div>
+          <div class="aqi-row">
+            <span class="aqi-dot" id="aqiDot"></span>
+            <span class="metric-value metric-value--aqi" id="metricAQI">--</span>
+          </div>
+          <span class="metric-sub" id="aqiLabel">Awaiting data</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ INSIGHTS ============ -->
+    <section class="insights" id="insightsSection" hidden>
+      <div class="section-head">
+        <h2>Smart Insights</h2>
+        <p>WeatherSphere AI reads the conditions, so you don't have to guess.</p>
+      </div>
+      <div class="insights-grid" id="insightsGrid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Built with the OpenWeatherMap API · WeatherSphere AI © <span id="footerYear"></span></p>
+  </footer>
+
+  <!-- ============ LOADING OVERLAY ============ -->
+  <div class="loading-overlay" id="loadingOverlay" hidden>
+    <div class="loader-orb">
+      <div class="loader-ring"></div>
+      <div class="loader-ring loader-ring--2"></div>
+      <div class="loader-core"></div>
+    </div>
+    <p class="loader-text" id="loaderText">Fetching atmospheric data…</p>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
